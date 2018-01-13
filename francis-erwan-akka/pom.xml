@@ -20,7 +20,8 @@
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath />
-                        <argument>francis.erwan.parent.AkkaQuickstart</argument>
+                        <argument> francis.erwan.parent.Main </argument>
+                        <argument> ${project_loc}/fra_wikipedia_2010_10K-sentences.txt </argument>
                     </arguments>
                 </configuration>
             </plugin>
