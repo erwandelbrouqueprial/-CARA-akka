@@ -1,16 +1,22 @@
 /**
  * 
  */
-package francis.erwan.parent.counter;
+package francis.erwan.parent.actor;
 
 import java.util.HashMap;
+
+import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
+import akka.actor.Props;
+import francis.erwan.parent.message.Count;
+import francis.erwan.parent.message.CountOver;
 
 /**
  * @author erwan
  *
  */
-public class Counter {
-
+public class Counter extends AbstractActor {
+	
 	/**
 	 * HashMap ou la clé et une lettre, et la valeur son nombre d'occurences dans le texte
 	 */
@@ -22,6 +28,18 @@ public class Counter {
 
 	public Counter() {
 	}
+	
+	static public Props props(ActorRef dispatcherActor) {
+		return Props.create(Counter.class, () -> new Counter());
+	}
+	
+	@Override
+	public Receive createReceive() {		
+		return receiveBuilder().match(Count.class, count -> {
+			count.getDispatcher().tell(new CountOver(this.wordCounter(count.getLine())), ActorRef.noSender());
+		}).build();
+	}
+
 	
 	public HashMap<Character,Integer> charCounter(final String texte){
 		for (Character c : texte.toCharArray()) {

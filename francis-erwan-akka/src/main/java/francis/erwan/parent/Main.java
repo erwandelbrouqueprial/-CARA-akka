@@ -5,53 +5,38 @@ import java.io.IOException;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import francis.erwan.parent.actor.Counter;
 import francis.erwan.parent.actor.Dispatcher;
+import francis.erwan.parent.message.SendLine;
 import francis.erwan.parent.message.Start;
 
 public class Main {
-  public static void main(String[] args) {
-    final ActorSystem system = ActorSystem.create("helloakka");
-    try {
-      //#create-actors
-     /* final ActorRef printerActor = 
-        system.actorOf(Printer.props(), "printerActor");
-      final ActorRef howdyGreeter = 
-        system.actorOf(Greeter.props("Howdy", printerActor), "howdyGreeter");
-      final ActorRef helloGreeter = 
-        system.actorOf(Greeter.props("Hello", printerActor), "helloGreeter");
-      final ActorRef goodDayGreeter = 
-        system.actorOf(Greeter.props("Good day", printerActor), "goodDayGreeter"); */
-      
-      final ActorRef dispatcher = 
-    	        system.actorOf(Dispatcher.props(new File(args[0])), "dispatcherActor");
-      
-      //#create-actors
+	public static void main(String[] args) {
+		final ActorSystem system = ActorSystem.create("helloakka");
+		try {
 
-      //#main-send-messages
-     /* howdyGreeter.tell(new WhoToGreet("Akka"), ActorRef.noSender());
-      howdyGreeter.tell(new Greet(), ActorRef.noSender());
+			final ActorRef dispatcher = system.actorOf(Dispatcher.props(new File(args[0])), "dispatcherActor");
 
-      howdyGreeter.tell(new WhoToGreet("Lightbend"), ActorRef.noSender());
-      howdyGreeter.tell(new Greet(), ActorRef.noSender());
+			final ActorRef counter1 = system.actorOf(Counter.props(dispatcher), "counter1Actor");
+			final ActorRef counter2 = system.actorOf(Counter.props(dispatcher), "counter2Actor");
+			final ActorRef counter3 = system.actorOf(Counter.props(dispatcher), "counter3Actor");
 
-      helloGreeter.tell(new WhoToGreet("Java"), ActorRef.noSender());
-      helloGreeter.tell(new Greet(), ActorRef.noSender());
+			dispatcher.tell(new Start(dispatcher), ActorRef.noSender());
 
-      goodDayGreeter.tell(new WhoToGreet("Play"), ActorRef.noSender());
-      goodDayGreeter.tell(new Greet(), ActorRef.noSender()); */
-      
-      dispatcher.tell(new Start(), ActorRef.noSender());
-      
-      //#main-send-messages
+			while (!Finish.getInstance().isFinish()) {
+				dispatcher.tell(new SendLine(counter1), ActorRef.noSender());
+				dispatcher.tell(new SendLine(counter2), ActorRef.noSender());
+				dispatcher.tell(new SendLine(counter3), ActorRef.noSender());
 
-      System.out.println(">>> Press ENTER to exit <<<");
-      
-      System.out.println(args[0]);
-      
-      System.in.read();
-    } catch (IOException ioe) {
-    } finally {
-      system.terminate();
-    }
-  }
+				if (Finish.getInstance().getCounterFinished() == 3) { // nb de compteur
+					Finish.getInstance().setFinish(true);
+				}
+			}
+
+			System.in.read();
+		} catch (IOException ioe) {
+		} finally {
+			system.terminate();
+		}
+	}
 }
